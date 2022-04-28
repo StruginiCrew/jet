@@ -83,7 +83,7 @@ fn parse_json_array(content: Vec<JsonValue>) -> ParseResult<Box<dyn Expression>>
                 parse_json_int_array(&content)
             }
         }
-        JsonValue::String(value) => parse_json_str_array(&content),
+        JsonValue::String(_) => parse_json_str_array(&content),
         _ => Err(ParseError::NestedArray),
     }
 }

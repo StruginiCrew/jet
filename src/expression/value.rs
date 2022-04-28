@@ -1,4 +1,4 @@
-use crate::expression::context::Context;
+use crate::context::Context;
 use crate::expression::eval_type::Type;
 use crate::expression::{EvalResult, Expression};
 use serde_json::{json, Value as JsonValue};
@@ -53,7 +53,7 @@ where
     ))
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Value {
     Bool(bool),
     BoolArray(Vec<bool>),
@@ -65,13 +65,9 @@ pub enum Value {
     StrArray(Vec<String>),
 }
 
-impl Expression for Value {
-    fn eval(&self, context: &Context) -> EvalResult<Value> {
-        Ok(self.clone())
-    }
-
-    fn eval_type(&self, context: &Context) -> EvalResult<Type> {
-        let eval_type = match self {
+impl Value {
+    pub fn concrete_type(&self) -> Type {
+        match self {
             Value::Bool(_) => Type::Bool,
             Value::BoolArray(content) => Type::BoolArray(content.len()),
             Value::Int(_) => Type::Int,
@@ -80,9 +76,17 @@ impl Expression for Value {
             Value::FloatArray(content) => Type::FloatArray(content.len()),
             Value::Str(_) => Type::Str,
             Value::StrArray(content) => Type::StrArray(content.len()),
-        };
+        }
+    }
+}
 
-        Ok(eval_type)
+impl Expression for Value {
+    fn eval(&self, _context: &Context) -> EvalResult<Value> {
+        Ok(self.clone())
+    }
+
+    fn eval_type(&self, _context: &Context) -> EvalResult<Type> {
+        Ok(self.concrete_type())
     }
 
     fn context_dependencies(&self) -> Option<Vec<String>> {

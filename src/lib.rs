@@ -1,10 +1,15 @@
+mod context;
 mod expression;
 mod parser;
+mod runner;
 
-pub use expression::context::Context;
+pub use context::{Context, ContextSchema};
 pub use expression::eval_type::Type;
+pub use expression::ops;
 pub use expression::value::Value;
+pub use expression::Expression;
 pub use parser::parse;
+pub use runner::Runner;
 
 #[cfg(test)]
 mod tests {
@@ -12,15 +17,15 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn it_parses_and_evals() {
-        let mut context = Context::new();
-        context.insert("userId".to_string(), Value::Int(1));
-
+    fn it_runs() {
+        let schema = ContextSchema::new().declare("userId", Type::Int);
+        let context = Context::new().set_int("userId", 1);
         let json = json!({"eq": [1, {"get": ["userId"]}]});
 
         let expression = parse(&json.to_string()).unwrap();
 
-        assert_eq!(expression.eval(&context).unwrap(), Value::Bool(true));
-        assert_eq!(expression.eval_type(&context).unwrap(), Type::Bool);
+        let runner = Runner::new(&schema, &context).unwrap();
+
+        assert_eq!(runner.eval(&expression).unwrap(), Value::Bool(true));
     }
 }

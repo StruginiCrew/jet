@@ -1,27 +1,13 @@
-pub mod context;
+pub(crate) mod error;
 pub mod eval_type;
 pub mod ops;
 pub mod value;
 
-use context::Context;
-use eval_type::Type;
+use crate::context::Context;
+use crate::expression::eval_type::Type;
+use crate::expression::value::Value;
+use error::*;
 use serde_json::{json, Value as JsonValue};
-use value::Value;
-
-pub type EvalResult<T> = Result<T, EvalError>;
-
-#[derive(Debug)]
-pub enum EvalError {
-    MissingContext {
-        name: String,
-    },
-    TypeMismatch {
-        op_json: JsonValue,
-        arg_position: usize,
-        expected: Type,
-        got: Type,
-    },
-}
 
 pub trait Expression {
     fn eval(&self, context: &Context) -> EvalResult<Value>;
@@ -47,8 +33,30 @@ pub mod test_utils {
     pub fn assert_eval_eq(
         context: &Context,
         left: Box<dyn Expression>,
+        left_type: Type,
         right: Box<dyn Expression>,
-    ) -> () {
-        assert_eq!(left.eval(&context).unwrap(), right.eval(&context).unwrap())
+    ) {
+        assert_eq!(left.eval_type(&context).unwrap(), left_type);
+        assert_eq!(left.eval(&context).unwrap(), right.eval(&context).unwrap());
+    }
+
+    pub fn assert_eval_type_err(
+        context: &Context,
+        expression: Box<dyn Expression>,
+        expected: Type,
+        actual: Type,
+    ) {
+        let result = expression.eval_type(&context);
+
+        assert!(result.is_err());
+        assert!(match result {
+            Err(EvalError::TypeMismatch {
+                op_json: _,
+                arg_position: _,
+                expected: err_expected,
+                actual: err_actual,
+            }) => err_expected == expected && err_actual == actual,
+            _ => false,
+        })
     }
 }
