@@ -3,44 +3,92 @@ use crate::expression::eval_type::Type;
 use crate::expression::{EvalResult, Expression};
 use serde_json::{json, Value as JsonValue};
 
+pub fn bool_val(content: bool) -> Value {
+    Value::Bool(content)
+}
+
 pub fn bool(content: bool) -> Box<dyn Expression> {
-    Box::new(Value::Bool(content))
+    Box::new(bool_val(content))
+}
+
+pub fn bool_array_val<A>(content: A) -> Value
+where
+    A: Into<Vec<bool>>,
+{
+    Value::BoolArray(content.into())
 }
 
 pub fn bool_array<A>(content: A) -> Box<dyn Expression>
 where
     A: Into<Vec<bool>>,
 {
-    Box::new(Value::BoolArray(content.into()))
+    Box::new(bool_array_val(content))
+}
+
+pub fn int_val(content: i64) -> Value {
+    Value::Int(content)
 }
 
 pub fn int(content: i64) -> Box<dyn Expression> {
-    Box::new(Value::Int(content))
+    Box::new(int_val(content))
+}
+
+pub fn int_array_val<A>(content: A) -> Value
+where
+    A: Into<Vec<i64>>,
+{
+    Value::IntArray(content.into())
 }
 
 pub fn int_array<A>(content: A) -> Box<dyn Expression>
 where
     A: Into<Vec<i64>>,
 {
-    Box::new(Value::IntArray(content.into()))
+    Box::new(int_array_val(content))
+}
+
+pub fn float_val(content: f64) -> Value {
+    Value::Float(content)
 }
 
 pub fn float(content: f64) -> Box<dyn Expression> {
-    Box::new(Value::Float(content))
+    Box::new(float_val(content))
+}
+
+pub fn float_array_val<A>(content: A) -> Value
+where
+    A: Into<Vec<f64>>,
+{
+    Value::FloatArray(content.into())
 }
 
 pub fn float_array<A>(content: A) -> Box<dyn Expression>
 where
     A: Into<Vec<f64>>,
 {
-    Box::new(Value::FloatArray(content.into()))
+    Box::new(float_array_val(content))
+}
+
+pub fn str_val<S>(content: S) -> Value
+where
+    S: Into<String>,
+{
+    Value::Str(content.into())
 }
 
 pub fn str<S>(content: S) -> Box<dyn Expression>
 where
     S: Into<String>,
 {
-    Box::new(Value::Str(content.into()))
+    Box::new(str_val(content))
+}
+
+pub fn str_array_val<A, S>(content: A) -> Value
+where
+    S: Into<String>,
+    A: Into<Vec<S>>,
+{
+    Value::StrArray(content.into().into_iter().map(|s| s.into()).collect())
 }
 
 pub fn str_array<A, S>(content: A) -> Box<dyn Expression>
@@ -48,9 +96,7 @@ where
     S: Into<String>,
     A: Into<Vec<S>>,
 {
-    Box::new(Value::StrArray(
-        content.into().into_iter().map(|s| s.into()).collect(),
-    ))
+    Box::new(str_array_val(content))
 }
 
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
