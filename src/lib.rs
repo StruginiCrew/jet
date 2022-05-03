@@ -4,11 +4,13 @@ mod parser;
 mod runner;
 
 pub use context::{Context, ContextSchema};
+pub use expression::error::{EvalError, EvalResult};
 pub use expression::eval_type::Type;
 pub use expression::ops;
 pub use expression::value::Value;
 pub use expression::Expression;
 pub use parser::parse;
+pub use runner::error::{RunnerError, RunnerResult};
 pub use runner::Runner;
 
 #[cfg(test)]

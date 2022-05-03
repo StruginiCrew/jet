@@ -1,4 +1,4 @@
-mod error;
+pub mod error;
 
 use crate::context::{Context, ContextSchema};
 use crate::expression::value::Value;

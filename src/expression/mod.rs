@@ -1,4 +1,4 @@
-pub(crate) mod error;
+pub mod error;
 pub mod eval_type;
 pub mod ops;
 pub mod value;
