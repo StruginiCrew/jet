@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 pub type ContextSchemaMismatch = (String, Type, Option<Type>);
 
+#[derive(Clone)]
 pub struct ContextSchema {
     schema: HashMap<String, Type>,
 }
@@ -51,6 +52,7 @@ impl ContextSchema {
     }
 }
 
+#[derive(Clone)]
 pub struct Context {
     data: HashMap<String, Value>,
 }
