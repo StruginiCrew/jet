@@ -26,7 +26,7 @@ mod tests {
 
         let expression = parse(&json.to_string()).unwrap();
 
-        let runner = Runner::new(&schema, &context).unwrap();
+        let runner = Runner::new(schema, context).unwrap();
 
         assert_eq!(runner.eval(&expression).unwrap(), Value::Bool(true));
     }

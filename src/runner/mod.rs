@@ -5,22 +5,24 @@ use crate::expression::value::Value;
 use crate::expression::Expression;
 use error::*;
 
-pub struct Runner<'a> {
-    context_schema: &'a ContextSchema,
-    context: &'a Context,
+pub struct Runner {
+    context_schema: ContextSchema,
+    context: Context,
 }
 
-impl<'a> Runner<'a> {
-    pub fn new(
-        context_schema: &'a ContextSchema,
-        context: &'a Context,
-    ) -> Result<Self, RunnerError> {
-        context_schema.validate(context)?;
+impl Runner {
+    pub fn new(context_schema: ContextSchema, context: Context) -> RunnerResult<Self> {
+        context_schema.validate(&context)?;
 
         Ok(Runner {
             context_schema,
             context,
         })
+    }
+
+    pub fn update_context(&self, context: Context) -> RunnerResult<()> {
+        self.context_schema.validate(&context)?;
+        Ok(())
     }
 
     pub fn eval(&self, expression: &Box<dyn Expression>) -> RunnerResult<Value> {
