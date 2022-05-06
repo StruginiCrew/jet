@@ -124,6 +124,62 @@ impl Value {
             Value::StrArray(content) => Type::StrArray(content.len()),
         }
     }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Value::Bool(content) => Some(*content),
+            _ => None,
+        }
+    }
+
+    pub fn as_bool_array(&self) -> Option<Vec<bool>> {
+        match self {
+            Value::BoolArray(content) => Some(content.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn as_int(&self) -> Option<i64> {
+        match self {
+            Value::Int(content) => Some(*content),
+            _ => None,
+        }
+    }
+
+    pub fn as_int_array(&self) -> Option<Vec<i64>> {
+        match self {
+            Value::IntArray(content) => Some(content.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn as_float(&self) -> Option<f64> {
+        match self {
+            Value::Float(content) => Some(*content),
+            _ => None,
+        }
+    }
+
+    pub fn as_float_array(&self) -> Option<Vec<f64>> {
+        match self {
+            Value::FloatArray(content) => Some(content.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(&self) -> Option<String> {
+        match self {
+            Value::Str(content) => Some(content.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn as_str_array(&self) -> Option<Vec<String>> {
+        match self {
+            Value::StrArray(content) => Some(content.clone()),
+            _ => None,
+        }
+    }
 }
 
 impl Expression for Value {
