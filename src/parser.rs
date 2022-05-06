@@ -37,7 +37,7 @@ pub fn parse(input: &str) -> ParserResult<Box<dyn Expression>> {
     parse_json_value(json)
 }
 
-fn parse_json_value(json: JsonValue) -> ParserResult<Box<dyn Expression>> {
+pub fn parse_json_value(json: JsonValue) -> ParserResult<Box<dyn Expression>> {
     match json {
         JsonValue::Bool(content) => Ok(bool(content)),
         JsonValue::Number(content) => parse_json_number(content),

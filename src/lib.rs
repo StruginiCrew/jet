@@ -7,7 +7,7 @@ pub use expression::eval_type::Type;
 pub use expression::ops;
 pub use expression::value::Value;
 pub use expression::{EvalError, EvalResult, Expression};
-pub use parser::{parse, ParserError, ParserResult};
+pub use parser::{parse, parse_json_value, ParserError, ParserResult};
 
 #[cfg(test)]
 mod tests {
