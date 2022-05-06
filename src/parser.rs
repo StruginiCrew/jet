@@ -34,12 +34,12 @@ pub fn parse(input: &str) -> ParserResult<Box<dyn Expression>> {
         }
     };
 
-    parse_json_value(json)
+    parse_json_value(&json)
 }
 
-pub fn parse_json_value(json: JsonValue) -> ParserResult<Box<dyn Expression>> {
+pub fn parse_json_value(json: &JsonValue) -> ParserResult<Box<dyn Expression>> {
     match json {
-        JsonValue::Bool(content) => Ok(bool(content)),
+        JsonValue::Bool(content) => Ok(bool(*content)),
         JsonValue::Number(content) => parse_json_number(content),
         JsonValue::String(content) => Ok(str(content)),
         JsonValue::Array(content) => parse_json_array(content),
@@ -48,7 +48,7 @@ pub fn parse_json_value(json: JsonValue) -> ParserResult<Box<dyn Expression>> {
     }
 }
 
-fn parse_json_number(number: JsonNumber) -> ParserResult<Box<dyn Expression>> {
+fn parse_json_number(number: &JsonNumber) -> ParserResult<Box<dyn Expression>> {
     if number.is_f64() {
         let value = json_number_as_f64(number)?;
         Ok(float(value))
@@ -58,7 +58,7 @@ fn parse_json_number(number: JsonNumber) -> ParserResult<Box<dyn Expression>> {
     }
 }
 
-fn json_number_as_f64(number: JsonNumber) -> ParserResult<f64> {
+fn json_number_as_f64(number: &JsonNumber) -> ParserResult<f64> {
     match number.as_f64() {
         Some(value) => Ok(value),
         None => Err(ParserError {
@@ -69,7 +69,7 @@ fn json_number_as_f64(number: JsonNumber) -> ParserResult<f64> {
     }
 }
 
-fn json_number_as_i64(number: JsonNumber) -> ParserResult<i64> {
+fn json_number_as_i64(number: &JsonNumber) -> ParserResult<i64> {
     match number.as_i64() {
         Some(value) => Ok(value),
         None => Err(ParserError {
@@ -80,7 +80,7 @@ fn json_number_as_i64(number: JsonNumber) -> ParserResult<i64> {
     }
 }
 
-fn parse_json_array(content: Vec<JsonValue>) -> ParserResult<Box<dyn Expression>> {
+fn parse_json_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expression>> {
     if content.len() == 0 {
         return Err(ParserError {
             errorKind: ParserErrorKind::EmptyArray,
@@ -171,7 +171,7 @@ fn parse_json_str_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expres
     Ok(str_array(items))
 }
 
-fn parse_json_object(object: JsonObject) -> ParserResult<Box<dyn Expression>> {
+fn parse_json_object(object: &JsonObject) -> ParserResult<Box<dyn Expression>> {
     if object.keys().count() > 1 {
         return Err(ParserError {
             errorKind: ParserErrorKind::InvalidOp,
@@ -186,8 +186,8 @@ fn parse_json_object(object: JsonObject) -> ParserResult<Box<dyn Expression>> {
             }),
         },
         ("eq", JsonValue::Array(content)) if content.len() == 2 => {
-            let left = parse_json_value(content[0].clone())?;
-            let right = parse_json_value(content[1].clone())?;
+            let left = parse_json_value(&content[0])?;
+            let right = parse_json_value(&content[1])?;
             Ok(eq(left, right))
         }
         _ => Err(ParserError {
