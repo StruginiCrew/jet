@@ -6,7 +6,7 @@ pub use context::Context;
 pub use expression::eval_type::Type;
 pub use expression::ops;
 pub use expression::value::Value;
-pub use expression::Expression;
+pub use expression::{EvalError, EvalResult, Expression};
 pub use parser::parse;
 
 #[cfg(test)]
