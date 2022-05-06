@@ -1,56 +1,5 @@
-pub(crate) mod error;
-
-use crate::expression::eval_type::Type;
 use crate::expression::value::Value;
-use error::*;
 use std::collections::HashMap;
-
-pub type ContextSchemaMismatch = (String, Type, Option<Type>);
-
-#[derive(Clone)]
-pub struct ContextSchema {
-    schema: HashMap<String, Type>,
-}
-
-impl ContextSchema {
-    pub fn new() -> Self {
-        Self {
-            schema: HashMap::new(),
-        }
-    }
-
-    pub fn get(&self, name: &str) -> Option<&Type> {
-        self.schema.get(name)
-    }
-
-    pub fn declare<S>(mut self, name: S, eval_type: Type) -> Self
-    where
-        S: Into<String>,
-    {
-        self.schema.insert(name.into(), eval_type);
-        self
-    }
-
-    pub fn validate(&self, context: &Context) -> ContextResult<()> {
-        let errors = self.validation_errors(context);
-        if errors.len() == 0 {
-            Ok(())
-        } else {
-            Err(ContextError::SchemaMismatch { fields: errors })
-        }
-    }
-
-    pub fn validation_errors(&self, context: &Context) -> Vec<ContextSchemaMismatch> {
-        self.schema
-            .iter()
-            .filter_map(|(name, eval_type)| match context.get(name) {
-                Some(value) if value.concrete_type() == *eval_type => None,
-                Some(value) => Some((name.clone(), eval_type.clone(), Some(value.concrete_type()))),
-                None => Some((name.clone(), eval_type.clone(), None)),
-            })
-            .collect()
-    }
-}
 
 #[derive(Clone)]
 pub struct Context {

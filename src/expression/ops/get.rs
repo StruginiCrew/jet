@@ -1,7 +1,7 @@
 use crate::context::Context;
 use crate::expression::eval_type::Type;
 use crate::expression::value::{str, Value};
-use crate::expression::{EvalError, EvalResult, Expression};
+use crate::expression::{EvalError, EvalErrorKind, EvalResult, Expression};
 
 pub fn get<S>(name: S) -> Box<dyn Expression>
 where
@@ -27,8 +27,10 @@ impl Expression for Get {
     fn eval(&self, context: &Context) -> EvalResult<Value> {
         match context.get(&self.name) {
             Some(value) => Ok(value.clone()),
-            None => Err(EvalError::MissingContext {
-                name: self.name.clone(),
+            None => Err(EvalError {
+                errorKind: EvalErrorKind::MissingContext {
+                    name: self.name.clone(),
+                },
             }),
         }
     }
@@ -36,8 +38,10 @@ impl Expression for Get {
     fn eval_type(&self, context: &Context) -> EvalResult<Type> {
         match context.get(&self.name) {
             Some(value) => value.eval_type(&context),
-            None => Err(EvalError::MissingContext {
-                name: self.name.clone(),
+            None => Err(EvalError {
+                errorKind: EvalErrorKind::MissingContext {
+                    name: self.name.clone(),
+                },
             }),
         }
     }

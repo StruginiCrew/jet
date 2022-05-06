@@ -1,5 +1,5 @@
 use crate::context::Context;
-use crate::expression::{EvalError, EvalResult, Expression};
+use crate::expression::{EvalError, EvalErrorKind, EvalResult, Expression};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Type {
@@ -33,11 +33,13 @@ pub fn type_check_all_args_have_same_type(
 
             match arg_type {
                 Ok(arg_type) if arg_type == expected_type => None,
-                Ok(arg_type) => Some(Err(EvalError::TypeMismatch {
-                    op_json: expression.to_json(),
-                    arg_position: position,
-                    expected: expected_type.clone(),
-                    actual: arg_type,
+                Ok(arg_type) => Some(Err(EvalError {
+                    errorKind: EvalErrorKind::TypeMismatch {
+                        op_json: expression.to_json(),
+                        arg_position: position,
+                        expected: expected_type.clone(),
+                        actual: arg_type,
+                    },
                 })),
                 Err(err) => Some(Err(err)),
             }

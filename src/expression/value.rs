@@ -132,9 +132,12 @@ impl Value {
         }
     }
 
-    pub fn as_bool_array(&self) -> Option<Vec<bool>> {
+    pub fn as_bool_array(&self, size: usize) -> Option<Vec<bool>> {
         match self {
-            Value::BoolArray(content) => Some(content.clone()),
+            Value::BoolArray(content) => match self.concrete_type() {
+                Type::BoolArray(value_size) if value_size == size => Some(content.clone()),
+                _ => None,
+            },
             _ => None,
         }
     }
@@ -146,9 +149,12 @@ impl Value {
         }
     }
 
-    pub fn as_int_array(&self) -> Option<Vec<i64>> {
+    pub fn as_int_array(&self, size: usize) -> Option<Vec<i64>> {
         match self {
-            Value::IntArray(content) => Some(content.clone()),
+            Value::IntArray(content) => match self.concrete_type() {
+                Type::IntArray(value_size) if value_size == size => Some(content.clone()),
+                _ => None,
+            },
             _ => None,
         }
     }
@@ -160,9 +166,12 @@ impl Value {
         }
     }
 
-    pub fn as_float_array(&self) -> Option<Vec<f64>> {
+    pub fn as_float_array(&self, size: usize) -> Option<Vec<f64>> {
         match self {
-            Value::FloatArray(content) => Some(content.clone()),
+            Value::FloatArray(content) => match self.concrete_type() {
+                Type::FloatArray(value_size) if value_size == size => Some(content.clone()),
+                _ => None,
+            },
             _ => None,
         }
     }
@@ -174,9 +183,12 @@ impl Value {
         }
     }
 
-    pub fn as_str_array(&self) -> Option<Vec<String>> {
+    pub fn as_str_array(&self, size: usize) -> Option<Vec<String>> {
         match self {
-            Value::StrArray(content) => Some(content.clone()),
+            Value::StrArray(content) => match self.concrete_type() {
+                Type::StrArray(value_size) if value_size == size => Some(content.clone()),
+                _ => None,
+            },
             _ => None,
         }
     }
