@@ -1,6 +1,6 @@
 use crate::expression::ops::*;
 use crate::expression::Expression;
-use serde_json::{Map as JsonMap, Number as JsonNumber, Value as JsonValue};
+use serde_json::{Error as JsonError, Map as JsonMap, Number as JsonNumber, Value as JsonValue};
 
 type JsonObject = JsonMap<String, JsonValue>;
 
@@ -9,12 +9,13 @@ pub type ParserResult<T> = Result<T, ParserError>;
 #[derive(Debug)]
 pub struct ParserError {
     errorKind: ParserErrorKind,
+    json: Option<JsonValue>,
 }
 
 #[derive(Debug)]
 enum ParserErrorKind {
-    InvalidInput { description: String },
-    InvalidNumber { description: String },
+    InvalidInput(JsonError),
+    InvalidNumber,
     EmptyArray,
     MixedArray,
     NestedArray,
@@ -27,9 +28,8 @@ pub fn parse(input: &str) -> ParserResult<Box<dyn Expression>> {
         Ok(json) => json,
         Err(err) => {
             return Err(ParserError {
-                errorKind: ParserErrorKind::InvalidInput {
-                    description: format!("{}", err),
-                },
+                errorKind: ParserErrorKind::InvalidInput(err),
+                json: None,
             })
         }
     };
@@ -62,9 +62,8 @@ fn json_number_as_f64(number: &JsonNumber) -> ParserResult<f64> {
     match number.as_f64() {
         Some(value) => Ok(value),
         None => Err(ParserError {
-            errorKind: ParserErrorKind::InvalidNumber {
-                description: format!("Invalid float: {:?}", number),
-            },
+            errorKind: ParserErrorKind::InvalidNumber,
+            json: Some(JsonValue::Number(number.clone())),
         }),
     }
 }
@@ -73,9 +72,8 @@ fn json_number_as_i64(number: &JsonNumber) -> ParserResult<i64> {
     match number.as_i64() {
         Some(value) => Ok(value),
         None => Err(ParserError {
-            errorKind: ParserErrorKind::InvalidNumber {
-                description: format!("Invalid int: {:?}", number),
-            },
+            errorKind: ParserErrorKind::InvalidNumber,
+            json: Some(JsonValue::Number(number.clone())),
         }),
     }
 }
@@ -84,6 +82,7 @@ fn parse_json_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expression
     if content.len() == 0 {
         return Err(ParserError {
             errorKind: ParserErrorKind::EmptyArray,
+            json: Some(JsonValue::Array(content.clone())),
         });
     }
 
@@ -99,6 +98,7 @@ fn parse_json_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expression
         JsonValue::String(_) => parse_json_str_array(&content),
         _ => Err(ParserError {
             errorKind: ParserErrorKind::NestedArray,
+            json: Some(JsonValue::Array(content.clone())),
         }),
     }
 }
@@ -112,6 +112,7 @@ fn parse_json_bool_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expre
             _ => {
                 return Err(ParserError {
                     errorKind: ParserErrorKind::MixedArray,
+                    json: Some(JsonValue::Array(content.clone())),
                 })
             }
         }
@@ -129,6 +130,7 @@ fn parse_json_float_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expr
             _ => {
                 return Err(ParserError {
                     errorKind: ParserErrorKind::MixedArray,
+                    json: Some(JsonValue::Array(content.clone())),
                 })
             }
         }
@@ -146,6 +148,7 @@ fn parse_json_int_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expres
             _ => {
                 return Err(ParserError {
                     errorKind: ParserErrorKind::MixedArray,
+                    json: Some(JsonValue::Array(content.clone())),
                 })
             }
         }
@@ -163,6 +166,7 @@ fn parse_json_str_array(content: &Vec<JsonValue>) -> ParserResult<Box<dyn Expres
             _ => {
                 return Err(ParserError {
                     errorKind: ParserErrorKind::MixedArray,
+                    json: Some(JsonValue::Array(content.clone())),
                 })
             }
         }
@@ -175,6 +179,7 @@ fn parse_json_object(object: &JsonObject) -> ParserResult<Box<dyn Expression>> {
     if object.keys().count() > 1 {
         return Err(ParserError {
             errorKind: ParserErrorKind::InvalidOp,
+            json: Some(JsonValue::Object(object.clone())),
         });
     }
 
@@ -183,6 +188,7 @@ fn parse_json_object(object: &JsonObject) -> ParserResult<Box<dyn Expression>> {
             JsonValue::String(name) => Ok(get(name)),
             _ => Err(ParserError {
                 errorKind: ParserErrorKind::InvalidOp,
+                json: Some(JsonValue::Object(object.clone())),
             }),
         },
         ("eq", JsonValue::Array(content)) if content.len() == 2 => {
@@ -190,8 +196,9 @@ fn parse_json_object(object: &JsonObject) -> ParserResult<Box<dyn Expression>> {
             let right = parse_json_value(&content[1])?;
             Ok(eq(left, right))
         }
-        _ => Err(ParserError {
+        (k, _) => Err(ParserError {
             errorKind: ParserErrorKind::UnknownOp,
+            json: Some(JsonValue::Object(object.clone())),
         }),
     }
 }
@@ -218,6 +225,7 @@ mod tests {
 
     #[test]
     fn it_parses_json() {
-        assert_parse_eq(json!({"eq": [1, {"get": ["userId"]}]}))
+        assert_parse_eq(json!({"eq": [1, {"get": ["userId"]}]}));
+        assert_parse_eq(json!(true))
     }
 }
