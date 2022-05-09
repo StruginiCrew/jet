@@ -196,7 +196,12 @@ fn parse_json_object(object: &JsonObject) -> ParserResult<Box<dyn Expression>> {
             let right = parse_json_value(&content[1])?;
             Ok(eq(left, right))
         }
-        (k, _) => Err(ParserError {
+        ("gt", JsonValue::Array(content)) if content.len() == 2 => {
+            let left = parse_json_value(&content[0])?;
+            let right = parse_json_value(&content[1])?;
+            Ok(gt(left, right))
+        }
+        _ => Err(ParserError {
             errorKind: ParserErrorKind::UnknownOp,
             json: Some(JsonValue::Object(object.clone())),
         }),
